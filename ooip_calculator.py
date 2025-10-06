@@ -1,5 +1,24 @@
 # OOIP Calculator by Siddharth Gorai
 
+# Rs -> Solution Gas-Oil Ratio (scf/STB)
+# Rp -> Producing Gas-Oil Ratio (scf/STB)
+# Np -> Cumulative Oil Production (STB)
+# Wp -> Cumulative Water Production (STB)
+# P  -> Reservoir Pressure (psia)
+# Bo -> Oil Formation Volume Factor (RB/STB)
+# Bg -> Gas Formation Volume Factor (RB/scf)
+# Bw -> Water Formation Volume Factor (RB/STB)
+# Boi-> Initial Oil Formation Volume Factor (RB/STB)
+# Bgi-> Initial Gas Formation Volume Factor (RB/scf)
+# Rsi-> Initial Solution Gas-Oil Ratio (scf/STB)  , Formation GOR
+# Cf -> Formation Compressibility (1/psia)
+# Cw -> Water Compressibility (1/psia)
+# Swi-> Initial Water Saturation (fraction)
+# Pi -> Initial Reservoir Pressure (psia)
+# m  -> Ratio of Gas Cap Volume to Initial Oil Volume (fraction)
+# We -> Cumulative Excess Water Injection (STB)
+# Z  -> Gas Deviation Factor (dimensionless)
+
 import pandas as pd
 import matplotlib.pyplot as plt
 import numpy as np
@@ -15,8 +34,9 @@ def show_csv_files():
 
 def calc_ooip(df):
     def calc_row(row):
-        Np, Rp, Rs, Wp, P = row['Np'], row['Rp'], row['Rs'], row['Wp'], row['P']
+        Np, Rp, Rs, Wp, P, Temp = row['Np'], row['Rp'], row['Rs'], row['Wp'], row['P (psia)'], row["Temp (°R)"]
 
+        Bg = 0.0054 * Z * Temp / P 
         Eo = (Bo - Boi) + Bg * (Rsi - Rs)
         Eg = Boi * (Bg / Bgi - 1)
         Er = Boi * (Cf + Cw * Swi / (1 - Swi)) * (Pi - P)
@@ -52,7 +72,7 @@ def plot_FvsEnet(F, Enet, slope, intercept):
 
 
 def submit():
-    global Boi, Bo, Bg, Bgi, Bw, Rsi, Cf, Cw, Swi, Pi, m, We
+    global Boi, Bo, Bgi, Bw, Rsi, Cf, Cw, Swi, Pi, m, We, Z
 
     try:
         for key in default_values:
@@ -74,8 +94,7 @@ def submit():
 
 default_values = {
     "Boi": 1.1,
-    "Bo": 1.2,
-    "Bg": 0.005,
+    "Bo": 1.2, 
     "Bgi": 0.006,
     "Bw": 1.0,
     "Rsi": 500,
@@ -84,7 +103,8 @@ default_values = {
     "Swi": 0.25,
     "Pi": 3000,
     "m": 0.2,
-    "We": 0
+    "We": 0,
+    "Z": 1.0,  
 }
 
 entries = {}
