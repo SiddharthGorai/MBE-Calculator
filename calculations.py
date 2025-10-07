@@ -13,24 +13,32 @@ class Calculations:
         self.Rs = Rs 
 
     def calc_Bo(self, method):
-        # 1 -> Standing's Correlation
-        # 2 -> Marhoun's Correlation
-        # 3 -> Glaso's Correlation
 
-        if method == 1: # Standing's Correlation
+        if method == "Standing": # Standing's Correlation
             self.Bo = 0.9759 + 0.00012 * (self.Rs * (self.Yg / self.Yo)**0.5 + 1.25 * (self.Temp - 460))**1.2
             return self.Bo
-        elif method == 2: # Marhoun's Correlation
+        elif method == "Marhoun": # Marhoun's Correlation
             a = 0.742390
             b = 0.323294
             c = - 1.202040
             F = (self.Rs**a) * (self.Yg**b) * (self.Yo**c)
-            self.Bo = 0.497069 + (0.862963*(10**-3) * self.T) + (0.182594 * (10**-2)*F) + (0.318099 * (10**-5)*F**2 )
+            self.Bo = 0.497069 + (0.862963*(10**-3) * self.T) + (0.182594 * (10**-2)*F) + (0.318099 * (10**-5)*(F**2) )
             return self.Bo
-        elif method == 3: # Glaso's Correlation
+        elif method == "Glaso": # Glaso's Correlation
             Bob = self.Rs * (self.Yg / self.Yo)**0.526 + 0.968 * (self.Temp - 460)
             A = -6.58511 + 2.91329*math.log10(Bob) - 0.27683*(math.log10(Bob)**2)
             self.Bo = 1.0 + 10**A
             return self.Bo
     
+    def calc_Rs(self, method, P):
+        api = 141.5/self.Yo - 131.5
+        if method == "Standing": # Standing's Correlation, Applicable for P <= Pb
+            x = 0.0125 * api - 0.00091 * (self.Temp - 460)
+            self.Rs = self.Yg * (((P/18.2) + 1.4)*10**x)**1.2048
+            return self.Rs
+        elif method == "Glaso": # Glaso's Correlation
+            x = 2.8869 - (14.1811 - 3.3093*math.log10(P)) ** 0.5
+            Pb_star = 10**x
+            self.Rs = self.Yg * (Pb_star * ((api**0.989)/((self.Temp - 460)**0.172)))**1.225
+            return self.Rs
    

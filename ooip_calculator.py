@@ -24,6 +24,7 @@ import matplotlib.pyplot as plt
 import numpy as np
 from tkinter import Tk, Button, Label, filedialog, messagebox, Entry, ttk
 import os 
+from calculations import Calculations
 
 def show_csv_files():
     files = []
@@ -36,6 +37,9 @@ def calc_ooip(df):
     def calc_row(row):
         Np, Rp, Rs, Wp, P, Temp = row['Np'], row['Rp'], row['Rs'], row['Wp'], row['P (psia)'], row["Temp (°R)"]
 
+        # Calculate Rs when P <= Pb using Standing's or Glaso's correlation
+        calc = Calculations(Yg, Yo, Temp, Rs)
+        Bo = calc.calc_Bo(Bo_method_combobox.get())
         Bg = 0.0054 * Z * Temp / P 
         Eo = (Bo - Boi) + Bg * (Rsi - Rs)
         Eg = Boi * (Bg / Bgi - 1)
@@ -72,7 +76,7 @@ def plot_FvsEnet(F, Enet, slope, intercept):
 
 
 def submit():
-    global Boi, Bo, Bgi, Bw, Rsi, Cf, Cw, Swi, Pi, m, We, Z
+    global Boi, Yg, Yo, Bgi, Bw, Rsi, Cf, Cw, Swi, Pi, m, We, Z
 
     try:
         for key in default_values:
@@ -94,7 +98,8 @@ def submit():
 
 default_values = {
     "Boi": 1.1,
-    "Bo": 1.2, 
+    "Yg": 0.798,
+    "Yo": 0.829,
     "Bgi": 0.006,
     "Bw": 1.0,
     "Rsi": 500,
@@ -128,6 +133,12 @@ for i, (key, val) in enumerate(default_values.items(), start=2):
     entry.grid(row=i, column=1, pady=5)
 
     entries[key] = entry
+
+Bo_method_label = Label(win,text="Rs, Bo",font=("Arial",9,"bold"))
+Bo_method_label.grid(row=2,column=2,sticky="w", padx=10)
+Bo_method_combobox = ttk.Combobox(win, values=["Standing", "Marhoun", "Glaso"], state="readonly")
+Bo_method_combobox.set("Glaso")
+Bo_method_combobox.grid(row=3, column=2,sticky="w", padx=10)
 
 
 data_label =  Label(win,text="Select CSV datafile")
