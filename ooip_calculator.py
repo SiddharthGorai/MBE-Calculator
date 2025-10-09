@@ -35,12 +35,18 @@ def show_csv_files():
 
 def calc_ooip(df):
     def calc_row(row):
-        Np, Rp, Rs, Wp, P, Temp = row['Np'], row['Rp'], row['Rs'], row['Wp'], row['P (psia)'], row["Temp (°R)"]
-
-        # Calculate Rs when P <= Pb using Standing's or Glaso's correlation
-        calc = Calculations(Yg, Yo, Temp, Rs)
-        Bo = calc.calc_Bo(Bo_method_combobox.get())
+        Np, Gp, Wp, P, Temp = row['Np'], row['Gp'], row['Wp'], row['P (psia)'], row["Temp (°R)"]
+        
+        calc = Calculations(Yg, Yo, Temp)
+        Rs = calc.calc_Rs(Bo_method_combobox.get(), P)
+        Rp = Gp / Np if Np != 0 else 0
+        Pb = calc.calc_Pb(Bo_method_combobox.get(), Rsi)
+        Bo = calc.calc_Bo(Bo_method_combobox.get(), Rs)
         Bg = 0.0054 * Z * Temp / P 
+        print(Pb, Rs, Rsi)
+        # if(P > Pb):
+        #     Rs = Rsi # Rs remains constant at Rsi when P > Pb
+
         Eo = (Bo - Boi) + Bg * (Rsi - Rs)
         Eg = Boi * (Bg / Bgi - 1)
         Er = Boi * (Cf + Cw * Swi / (1 - Swi)) * (Pi - P)
@@ -76,7 +82,7 @@ def plot_FvsEnet(F, Enet, slope, intercept):
 
 
 def submit():
-    global Boi, Yg, Yo, Bgi, Bw, Rsi, Cf, Cw, Swi, Pi, m, We, Z
+    global  Pi, Yg, Yo, Boi, Bgi, Bw, Rsi, Cf, Cw, Swi, m, We, Z
 
     try:
         for key in default_values:
@@ -97,16 +103,16 @@ def submit():
 
 
 default_values = {
-    "Boi": 1.1,
+    "Pi": 3000,
     "Yg": 0.798,
     "Yo": 0.829,
+    "Boi": 1.1,
     "Bgi": 0.006,
     "Bw": 1.0,
     "Rsi": 500,
     "Cf": 3e-6,
     "Cw": 3e-6,
     "Swi": 0.25,
-    "Pi": 3000,
     "m": 0.2,
     "We": 0,
     "Z": 1.0,  
